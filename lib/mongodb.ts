@@ -1,48 +1,28 @@
-/**
- * lib/mongodb.ts
- *
- * Singleton MongoDB client — prevents creating a new connection
- * on every hot-reload in development.
- *
- * INTERVIEW TALKING POINT:
- * "In dev, Next.js hot-reloads modules constantly. Without this
- * pattern, we'd exhaust MongoDB's connection pool. We store the
- * promise on the global object so it survives hot reloads."
- */
+import { MongoClient } from 'mongodb';
 
-import { MongoClient, Db } from 'mongodb'
-
-const MONGODB_URI = process.env.MONGODB_URI!
-
-if (!MONGODB_URI) {
-  throw new Error('Please add MONGODB_URI to your .env.local file')
+if (!process.env.MONGODB_URI) {
+  throw new Error('Please add your MONGODB_URI to .env.local');
 }
 
-// Extend Node's global type to hold our cached client
+const uri = process.env.MONGODB_URI as string;
+
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
+
 declare global {
   // eslint-disable-next-line no-var
-  var _mongoClientPromise: Promise<MongoClient> | undefined
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
-
-let clientPromise: Promise<MongoClient>
 
 if (process.env.NODE_ENV === 'development') {
-  // In dev: reuse existing client across hot reloads
   if (!global._mongoClientPromise) {
-    const client = new MongoClient(MONGODB_URI)
-    global._mongoClientPromise = client.connect()
+    client = new MongoClient(uri);
+    global._mongoClientPromise = client.connect();
   }
-  clientPromise = global._mongoClientPromise
+  clientPromise = global._mongoClientPromise;
 } else {
-  // In production: always create a fresh client
-  const client = new MongoClient(MONGODB_URI)
-  clientPromise = client.connect()
+  client = new MongoClient(uri);
+  clientPromise = client.connect();
 }
 
-export default clientPromise
-
-// Helper: get the "meridian" database directly
-export async function getDb(): Promise<Db> {
-  const client = await clientPromise
-  return client.db('meridian')
-}
+export default clientPromise;

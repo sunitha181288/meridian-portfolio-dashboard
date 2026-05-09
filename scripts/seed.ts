@@ -1,210 +1,109 @@
-/**
- * scripts/seed.ts
- *
- * Populates MongoDB with demo data so the dashboard works
- * without needing real investor data.
- *
- * Run with: npm run seed
- */
+import { MongoClient, ServerApiVersion } from 'mongodb';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
-import { MongoClient } from 'mongodb'
-import * as dotenv from 'dotenv'
-import * as path from 'path'
-
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
-
-const DEMO_USER_ID = 'demo|sunitha'
+const HOLDINGS = [
+  { id:'h1',  name:'BHP Group',         ticker:'BHP',  sector:'Materials',        assetClass:'Equity', quantity:1200, avgCost:38.50,  currentPrice:44.20,  dayChange:0.8  },
+  { id:'h2',  name:'Commonwealth Bank',  ticker:'CBA',  sector:'Financials',       assetClass:'Equity', quantity:800,  avgCost:92.00,  currentPrice:108.50, dayChange:-0.3 },
+  { id:'h3',  name:'CSL Limited',        ticker:'CSL',  sector:'Healthcare',       assetClass:'Equity', quantity:250,  avgCost:285.00, currentPrice:292.40, dayChange:1.2  },
+  { id:'h4',  name:'Afterpay',           ticker:'APT',  sector:'Technology',       assetClass:'Equity', quantity:500,  avgCost:62.00,  currentPrice:71.80,  dayChange:2.1  },
+  { id:'h5',  name:'Woodside Energy',    ticker:'WDS',  sector:'Energy',           assetClass:'Equity', quantity:900,  avgCost:28.50,  currentPrice:26.10,  dayChange:-1.5 },
+  { id:'h6',  name:'Telstra Group',      ticker:'TLS',  sector:'Consumer Staples', assetClass:'Equity', quantity:3000, avgCost:3.80,   currentPrice:4.05,   dayChange:0.5  },
+  { id:'h7',  name:'Macquarie Group',    ticker:'MQG',  sector:'Financials',       assetClass:'Equity', quantity:180,  avgCost:175.00, currentPrice:188.20, dayChange:0.4  },
+  { id:'h8',  name:'Fortescue Metals',   ticker:'FMG',  sector:'Materials',        assetClass:'Equity', quantity:650,  avgCost:18.20,  currentPrice:21.70,  dayChange:-0.8 },
+  { id:'h9',  name:'AGL Energy',         ticker:'AGL',  sector:'Utilities',        assetClass:'Equity', quantity:2200, avgCost:8.10,   currentPrice:9.45,   dayChange:1.0  },
+  { id:'h10', name:'Cash (AUD)',          ticker:'CASH', sector:'Cash',             assetClass:'Cash',   quantity:1,    avgCost:85000,  currentPrice:85000,  dayChange:0    },
+];
 
 async function seed() {
-  const client = new MongoClient(process.env.MONGODB_URI!)
-  await client.connect()
-  const db = client.db('meridian')
-
-  console.log('🌱 Seeding MongoDB...')
-
-  // Drop existing demo data
-  await db.collection('portfolios').deleteMany({ userId: DEMO_USER_ID })
-  await db.collection('transactions').deleteMany({ userId: DEMO_USER_ID })
-  await db.collection('performance_history').deleteMany({})
-
-  // ── PORTFOLIO ──────────────────────────────────────────────
-  await db.collection('portfolios').insertOne({
-    userId: DEMO_USER_ID,
-    totalValue: 2843000,
-    totalCost: 2525000,
-    currency: 'USD',
-    lastUpdated: new Date(),
-    holdings: [
-      {
-        fundId: 'fund_001',
-        fundName: 'Global Equity Growth',
-        fundType: 'Equity',
-        category: 'Developed Markets',
-        units: 854,
-        currentValue: 854000,
-        costBasis: 722000,
-        returnPct: 18.2,
-        allocationPct: 30.1,
-      },
-      {
-        fundId: 'fund_002',
-        fundName: 'Asia Pacific Bond',
-        fundType: 'Fixed Income',
-        category: 'APAC',
-        units: 625,
-        currentValue: 625000,
-        costBasis: 587000,
-        returnPct: 6.4,
-        allocationPct: 22.0,
-      },
-      {
-        fundId: 'fund_003',
-        fundName: 'HK Technology Fund',
-        fundType: 'Equity',
-        category: 'Sector',
-        units: 512,
-        currentValue: 512000,
-        costBasis: 419000,
-        returnPct: 22.1,
-        allocationPct: 18.0,
-      },
-      {
-        fundId: 'fund_004',
-        fundName: 'Real Assets REIT',
-        fundType: 'Alternatives',
-        category: 'Real Estate',
-        units: 398,
-        currentValue: 398000,
-        costBasis: 407000,
-        returnPct: -2.3,
-        allocationPct: 14.0,
-      },
-      {
-        fundId: 'fund_005',
-        fundName: 'USD Money Market',
-        fundType: 'Cash Equivalent',
-        category: 'Cash',
-        units: 284,
-        currentValue: 284000,
-        costBasis: 271000,
-        returnPct: 4.8,
-        allocationPct: 10.0,
-      },
-      {
-        fundId: 'fund_006',
-        fundName: 'EM Opportunities',
-        fundType: 'Equity',
-        category: 'Emerging Markets',
-        units: 170,
-        currentValue: 170000,
-        costBasis: 155000,
-        returnPct: 9.7,
-        allocationPct: 6.0,
-      },
-    ],
-  })
-
-  // ── TRANSACTIONS ───────────────────────────────────────────
-  const transactions = [
-    {
-      userId: DEMO_USER_ID,
-      type: 'BUY',
-      fundId: 'fund_001',
-      fundName: 'Global Equity Growth',
-      amount: 50000,
-      units: 42,
-      pricePerUnit: 1190,
-      date: new Date('2026-04-21'),
-      notes: 'Monthly top-up',
+  const client = new MongoClient(process.env.MONGODB_URI!, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
     },
-    {
-      userId: DEMO_USER_ID,
-      type: 'DIVIDEND',
-      fundId: 'fund_002',
-      fundName: 'Asia Pacific Bond',
-      amount: 3240,
-      date: new Date('2026-04-18'),
-      notes: 'Q1 dividend reinvested',
-    },
-    {
-      userId: DEMO_USER_ID,
-      type: 'SELL',
-      fundId: 'fund_004',
-      fundName: 'Real Assets REIT',
-      amount: -25000,
-      units: -61,
-      pricePerUnit: 409,
-      date: new Date('2026-04-15'),
-      notes: 'Partial exit — rebalancing',
-    },
-    {
-      userId: DEMO_USER_ID,
-      type: 'BUY',
-      fundId: 'fund_003',
-      fundName: 'HK Technology Fund',
-      amount: 80000,
-      units: 102,
-      pricePerUnit: 784,
-      date: new Date('2026-04-10'),
-      notes: 'New position opened',
-    },
-    {
-      userId: DEMO_USER_ID,
-      type: 'INTEREST',
-      fundId: 'fund_005',
-      fundName: 'USD Money Market',
-      amount: 1130,
-      date: new Date('2026-04-01'),
-      notes: 'Monthly interest',
-    },
-    {
-      userId: DEMO_USER_ID,
-      type: 'BUY',
-      fundId: 'fund_006',
-      fundName: 'EM Opportunities',
-      amount: 30000,
-      units: 193,
-      pricePerUnit: 155,
-      date: new Date('2026-03-20'),
-      notes: 'Added to existing position',
-    },
-  ]
+    tls: true,
+    tlsAllowInvalidCertificates: false,
+  });
 
-  await db.collection('transactions').insertMany(transactions)
+  try {
+    await client.connect();
+    console.log('✅ Connected to MongoDB');
 
-  // ── PERFORMANCE HISTORY ────────────────────────────────────
-  const perfHistory = [
-    { userId: DEMO_USER_ID, month: 'Nov 2025', portfolioValue: 2420000, benchmarkValue: 2400000 },
-    { userId: DEMO_USER_ID, month: 'Dec 2025', portfolioValue: 2510000, benchmarkValue: 2460000 },
-    { userId: DEMO_USER_ID, month: 'Jan 2026', portfolioValue: 2600000, benchmarkValue: 2520000 },
-    { userId: DEMO_USER_ID, month: 'Feb 2026', portfolioValue: 2690000, benchmarkValue: 2580000 },
-    { userId: DEMO_USER_ID, month: 'Mar 2026', portfolioValue: 2760000, benchmarkValue: 2640000 },
-    { userId: DEMO_USER_ID, month: 'Apr 2026', portfolioValue: 2843000, benchmarkValue: 2700000 },
-  ]
+    const db = client.db('meridian');
 
-  await db.collection('performance_history').insertMany(perfHistory)
+    // Clear existing data
+    await Promise.all([
+      db.collection('holdings').deleteMany({}),
+      db.collection('transactions').deleteMany({}),
+      db.collection('performance').deleteMany({}),
+    ]);
 
-  // ── INDEXES ────────────────────────────────────────────────
-  // Compound index for efficient transaction queries
-  await db.collection('transactions').createIndex(
-    { userId: 1, date: -1 },
-    { name: 'userId_date_desc' }
-  )
-  await db.collection('portfolios').createIndex(
-    { userId: 1 },
-    { unique: true, name: 'userId_unique' }
-  )
+    // Compute derived fields and insert holdings
+    const holdings = HOLDINGS.map(h => ({
+      ...h,
+      marketValue: h.quantity * h.currentPrice,
+      unrealisedPnl: h.quantity * (h.currentPrice - h.avgCost),
+      unrealisedPnlPct: ((h.currentPrice - h.avgCost) / h.avgCost) * 100,
+      weight: 0,
+    }));
+    const totalValue = holdings.reduce((s, h) => s + h.marketValue, 0);
+    holdings.forEach(h => h.weight = (h.marketValue / totalValue) * 100);
+    await db.collection('holdings').insertMany(holdings);
+    console.log('✅ Holdings inserted');
 
-  console.log('✅ Seed complete!')
-  console.log('   - 1 portfolio document')
-  console.log('   - 6 transactions')
-  console.log('   - 6 performance history points')
-  console.log('   - 2 indexes created')
+    // Generate 50 random transactions
+    const tickers = HOLDINGS.filter(h => h.assetClass !== 'Cash').map(h => h.ticker);
+    const types: ('BUY' | 'SELL' | 'DIVIDEND')[] = ['BUY', 'BUY', 'BUY', 'SELL', 'DIVIDEND'];
+    const txns = Array.from({ length: 50 }, (_, i) => {
+      const ticker = tickers[Math.floor(Math.random() * tickers.length)];
+      const holding = HOLDINGS.find(h => h.ticker === ticker)!;
+      const type = types[Math.floor(Math.random() * types.length)];
+      const qty = type === 'DIVIDEND' ? 0 : Math.floor(Math.random() * 100 + 10);
+      const price = holding.currentPrice * (0.97 + Math.random() * 0.06);
+      const daysAgo = Math.floor(Math.random() * 90);
+      const date = new Date();
+      date.setDate(date.getDate() - daysAgo);
+      return {
+        id: `t${i + 1}`,
+        type,
+        ticker,
+        name: holding.name,
+        quantity: qty,
+        price: Math.round(price * 100) / 100,
+        total: type === 'DIVIDEND'
+          ? Math.round(holding.quantity * 0.85 * 100) / 100
+          : Math.round(qty * price * 100) / 100,
+        date: date.toISOString(),
+        status: Math.random() > 0.1 ? 'SETTLED' : 'PENDING',
+      };
+    });
+    await db.collection('transactions').insertMany(txns);
+    console.log('✅ Transactions inserted');
 
-  await client.close()
+    // Generate 90-day performance history
+    let portfolioVal = totalValue * 0.88;
+    let benchmarkVal = totalValue * 0.88;
+    const perf = Array.from({ length: 90 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (90 - i));
+      portfolioVal *= (1 + (Math.random() * 0.014 - 0.005));
+      benchmarkVal *= (1 + (Math.random() * 0.012 - 0.005));
+      return {
+        date: d.toISOString().split('T')[0],
+        value: Math.round(portfolioVal),
+        benchmark: Math.round(benchmarkVal),
+      };
+    });
+    await db.collection('performance').insertMany(perf);
+    console.log('✅ Performance history inserted');
+
+    console.log('\n✅ Seed complete! 10 holdings, 50 transactions, 90-day history inserted.');
+  } catch (err) {
+    console.error('Seed failed:', err);
+  } finally {
+    await client.close();
+  }
 }
 
-seed().catch((err) => {
-  console.error('Seed failed:', err)
-  process.exit(1)
-})
+seed();
