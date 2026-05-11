@@ -68,8 +68,7 @@ export default function Sidebar() {
           </div>
         )}
         <a
-          href="/auth/logout"
-          className="flex items-center gap-2 text-xs text-slate-500 hover:text-red-400 transition-colors"
+          href="/auth/logout" className="flex items-center gap-2 text-xs text-slate-500 hover:text-red-400 transition-colors"
         >
           <LogOut size={13} />
           Sign out
