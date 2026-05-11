@@ -6,12 +6,12 @@ import {
   getTransactions,
   getPerformanceHistory,
 } from '@/lib/data';
-import KpiCard from '../components/KpiCard';
-import PerformanceChart from '../components/PerformanceChart';
-import AllocationDonut from '../components/AllocationDonut';
-import HoldingsTable from '../components/HoldingsTable';
-import ActivityFeed from '../components/ActivityFeed';
-import ChartSkeleton from '../components/ChartSkeleton';
+import KpiCard from '@/components/KpiCard';
+import PerformanceChart from '@/components/PerformanceChart';
+import AllocationDonut from '@/components/AllocationDonut';
+import HoldingsTable from '@/components/HoldingsTable';
+import ActivityFeed from '@/components/ActivityFeed';
+import ChartSkeleton from '@/components/ChartSkeleton';
 
 export default async function DashboardPage() {
   const [summary, holdings, allocation, transactions, performance] = await Promise.all([
