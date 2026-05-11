@@ -19,11 +19,11 @@ export default function Sidebar() {
     <aside className="fixed top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50">
       {/* Logo */}
       <div className="px-6 py-5 border-b border-slate-800">
-        <div className="tedxt-base font-semibold text-blue-400 tracking-tight">
+        <div className="text-base font-semibold text-blue-400 tracking-tight">
           ⬡ Meridian
         </div>
         <div className="text-xs text-slate-500 mt-0.5">
-          A2Z Asset Management
+          Antarctica Asset Management
         </div>
       </div>
 
