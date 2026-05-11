@@ -3,7 +3,7 @@ import { Auth0Provider } from '@auth0/nextjs-auth0/client';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Meridian | Antarctica Asset Management',
+  title: 'Meridian | A2Z Management',
   description: 'Portfolio management dashboard',
 };
 

@@ -30,7 +30,7 @@ export default async function DashboardPage() {
           Portfolio Overview
         </h1>
         <p className="text-slate-400 text-sm mt-1">
-          Antarctica Asset Management · Meridian Fund
+          A2Z Asset Management · Meridian Fund
         </p>
       </div>
 
