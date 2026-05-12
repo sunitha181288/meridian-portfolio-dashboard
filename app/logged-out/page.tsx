@@ -37,7 +37,6 @@ export default function LoggedOutPage() {
         >
           Sign in again
         </Link>
-
         <p className="text-xs text-slate-600 mt-6">
           A2Z Asset Management · Meridian Fund · Confidential
         </p>
